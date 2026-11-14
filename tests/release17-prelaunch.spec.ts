@@ -39,21 +39,20 @@ test('/ keeps the final Classic desktop actions compact and presents both dentis
   }
 });
 
-test('/contact/ shows the verified office hours, email, and prominent contact-card download', async ({ page }, testInfo) => {
+test('/contact/ shows the verified office contact card, hours, email, and working actions', async ({ page }, testInfo) => {
   await page.goto('/contact/', { waitUntil: 'networkidle' });
 
-  const download = page.getByRole('link', { name: 'Download Office Contact Card' });
-  await expect(download).toBeVisible();
-  await expect(download).toHaveAttribute('href', '/donovan-family-dentistry.vcf');
-  await expect(download).toHaveClass(/button--primary/);
-  await expect(page.getByText(/open the file and choose Add or Save to Contacts/i)).toBeVisible();
+  const saveContact = page.getByRole('link', { name: 'Save Contact' });
+  await expect(saveContact).toBeVisible();
+  await expect(saveContact).toHaveAttribute('href', '/donovan-family-dentistry.vcf');
+  await expect(saveContact).toHaveAttribute('download', '');
+  await expect(page.locator('.office-contact-card').getByRole('heading', { name: 'Donovan Family Dentistry' })).toBeVisible();
+  await expect(page.getByText(/Open the downloaded contact file and choose Add or Save to Contacts/i)).toBeVisible();
+  await expect(page.locator('.office-contact-actions a[href="tel:+18435256866"]')).toHaveAttribute('aria-label', 'Call Donovan Family Dentistry at (843) 525-6866');
+  await expect(page.locator('.office-contact-actions').getByRole('link', { name: 'Directions' })).toHaveAttribute('href', /google\.com\/maps\/search/);
 
-  const phoneCard = page.locator('.contact-card').filter({ hasText: 'Phone' });
-  const downloadBox = await download.boundingBox();
-  const phoneBox = await phoneCard.boundingBox();
-  expect(downloadBox).not.toBeNull();
-  expect(phoneBox).not.toBeNull();
-  expect(downloadBox!.y).toBeLessThan(phoneBox!.y);
+  await expect(page.locator('.office-contact-card')).toContainText('91 Sams Point Road');
+  await expect(page.locator('.office-contact-card')).toContainText('Mon–Thu 7:30 AM–5:00 PM · Fri–Sun closed');
 
   for (const day of ['Monday', 'Tuesday', 'Wednesday', 'Thursday']) {
     const row = page.getByRole('row', { name: new RegExp(`${day}\\s+7:30 AM-5:00 PM`, 'i') });
@@ -65,6 +64,24 @@ test('/contact/ shows the verified office hours, email, and prominent contact-ca
     path: testInfo.outputPath('release17-prelaunch-classic-contact-hours.png'),
     fullPage: true
   });
+});
+
+test('/contact/ office card remains readable from narrow mobile through desktop widths', async ({ page }) => {
+  await page.goto('/contact/', { waitUntil: 'networkidle' });
+  for (const width of [320, 360, 390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const dimensions = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      content: document.documentElement.scrollWidth,
+      actions: [...document.querySelectorAll('.office-contact-actions a')].map((anchor) => {
+        const rect = anchor.getBoundingClientRect();
+        return { width: rect.width, height: rect.height, text: (anchor.textContent || '').trim(), visible: rect.width > 0 && rect.height > 0 };
+      }),
+    }));
+    expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
+    expect(dimensions.actions).toHaveLength(3);
+    expect(dimensions.actions.every((action) => action.visible && action.height >= 48 && action.width >= 44 && action.text.length > 0)).toBeTruthy();
+  }
 });
 
 test('/modern/contact/ remains a noindex future-design demo with matching contact details', async ({ page }) => {

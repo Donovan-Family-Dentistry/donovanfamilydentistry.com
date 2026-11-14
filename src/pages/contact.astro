@@ -3,21 +3,34 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import site from '../data/site.json';
 const fullAddress = `${site.address.street}, ${site.address.city}, ${site.address.state} ${site.address.postalCode}`;
 const mapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
+const shortDay = (day) => day.slice(0, 3);
+const openDays = site.hours.filter((item) => item.hours.toLowerCase() !== 'closed');
+const closedDays = site.hours.filter((item) => item.hours.toLowerCase() === 'closed');
+const hoursSummary = `${shortDay(openDays[0].day)}–${shortDay(openDays.at(-1).day)} ${openDays[0].hours.replace('-', '–')} · ${shortDay(closedDays[0].day)}–${shortDay(closedDays.at(-1).day)} closed`;
 ---
 <BaseLayout title="Contact and Directions | Donovan Family Dentistry" description="Call or email Donovan Family Dentistry, or get directions to 91 Sams Point Road in Beaufort, South Carolina.">
   <header class="page-hero"><div class="container"><p class="eyebrow">Contact and directions</p><h1>Visit Donovan Family Dentistry in Beaufort</h1><p class="lead">Call or email the office, open turn-by-turn directions to 91 Sams Point Road, or download the office contact card to save the practice to your contacts.</p></div></header>
   <section class="section">
     <div class="container split">
       <div>
-        <div class="contact-download-card">
-          <a class="button button--primary" href="/donovan-family-dentistry.vcf" download>Download Office Contact Card</a>
-          <p>Downloads the office phone number, email address, and Lady's Island address. After it downloads, open the file and choose <strong>Add</strong> or <strong>Save to Contacts</strong> on your device.</p>
-        </div>
-        <div class="contact-grid">
-          <article class="contact-card"><strong>Phone</strong><a href={`tel:${site.phoneHref}`}>{site.phoneDisplay}</a></article>
-          <article class="contact-card"><strong>Email</strong><a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></article>
-          <article class="contact-card"><strong>Address</strong><a href={mapHref} rel="noopener">{fullAddress}</a></article>
-        </div>
+        <section class="office-contact-card" aria-labelledby="office-contact-title">
+          <div class="office-contact-card__identity">
+            <img src={site.logo} width="64" height="64" alt={site.logoAlt} />
+            <div><h2 id="office-contact-title">{site.practiceName}</h2><p>Visit our Beaufort office</p></div>
+          </div>
+          <dl class="office-contact-card__details">
+            <div><dt>Phone</dt><dd><a href={`tel:${site.phoneHref}`}>{site.phoneDisplay}</a></dd></div>
+            <div><dt>Address</dt><dd><a href={mapHref} rel="noopener noreferrer">{fullAddress}</a></dd></div>
+            <div><dt>Email</dt><dd><a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></dd></div>
+            <div><dt>Hours</dt><dd>{hoursSummary}</dd></div>
+          </dl>
+          <nav class="office-contact-actions" aria-label="Office contact actions">
+            <a class="button button--primary" href={`tel:${site.phoneHref}`} aria-label={`Call Donovan Family Dentistry at ${site.phoneDisplay}`}>Call</a>
+            <a class="button button--quiet" href={mapHref} rel="noopener noreferrer">Directions</a>
+            <a class="button button--quiet" href="/donovan-family-dentistry.vcf" download>Save Contact</a>
+          </nav>
+          <p class="office-contact-card__tip">On a phone? Open the downloaded contact file and choose <strong>Add</strong> or <strong>Save to Contacts</strong>.</p>
+        </section>
         <div class="hero-image" style="margin-top: 2rem"><img src={site.heroImage} width="600" height="336" alt={site.heroAlt} /></div>
       </div>
       <aside class="info-panel">
