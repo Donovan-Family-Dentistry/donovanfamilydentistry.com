@@ -4,7 +4,9 @@
   import Clarity from '@microsoft/clarity';
   import { shouldLoadPracticeAnalytics } from '../utils/practice-analytics-policy.js';
 
-  if (shouldLoadPracticeAnalytics(window.location.hostname, window.location.pathname)) {
+  const releaseEnabled = import.meta.env.PUBLIC_PRACTICE_ANALYTICS_ENABLED === 'true';
+
+  if (shouldLoadPracticeAnalytics(window.location.hostname, window.location.pathname, releaseEnabled)) {
     Clarity.init('zc6ml125xo');
 
     window.dataLayer = window.dataLayer || [];
