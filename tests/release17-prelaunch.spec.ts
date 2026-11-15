@@ -49,7 +49,14 @@ test('/contact/ shows the verified office contact card, hours, email, and workin
   await expect(page.locator('.office-contact-card').getByRole('heading', { name: 'Donovan Family Dentistry' })).toBeVisible();
   await expect(page.getByText(/Open the downloaded contact file and choose Add or Save to Contacts/i)).toBeVisible();
   await expect(page.locator('.office-contact-actions a[href="tel:+18435256866"]')).toHaveAttribute('aria-label', 'Call Donovan Family Dentistry at (843) 525-6866');
-  await expect(page.locator('.office-contact-actions').getByRole('link', { name: 'Directions' })).toHaveAttribute('href', /google\.com\/maps\/search/);
+  const directionsHref = await page.locator('.office-contact-actions').getByRole('link', { name: 'Directions' }).getAttribute('href');
+  if (!directionsHref) throw new Error('Directions link is missing its URL');
+  const directionsUrl = new URL(directionsHref);
+  expect(directionsUrl.protocol).toBe('https:');
+  expect(directionsUrl.hostname).toBe('www.google.com');
+  expect(directionsUrl.pathname).toBe('/maps/search/');
+  expect(directionsUrl.searchParams.get('api')).toBe('1');
+  expect(directionsUrl.searchParams.get('query')).toContain('91 Sams Point Road');
 
   await expect(page.locator('.office-contact-card')).toContainText('91 Sams Point Road');
   await expect(page.locator('.office-contact-card')).toContainText('Mon–Thu 7:30 AM–5:00 PM · Fri–Sun closed');
