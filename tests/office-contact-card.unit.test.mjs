@@ -34,6 +34,15 @@ test('public office vCard is CRLF-delimited v3.0 with required fields and site d
   assert.ok(vcf.includes(`${site.address.street};${site.address.city};${site.address.state};${site.address.postalCode};USA`));
   assert.ok(vcf.includes(site.contactEmail));
   assert.match(vcf, /^NOTE:Office hours /m);
+  const vcfLines = vcf.split('\r\n');
+  const noteIndex = vcfLines.findIndex((line) => line.startsWith('NOTE:'));
+  assert.notEqual(noteIndex, -1, 'vCard includes the office-hours NOTE');
+  const noteLines = [vcfLines[noteIndex]];
+  let nextNoteLine = noteIndex + 1;
+  while (vcfLines[nextNoteLine]?.startsWith(' ')) noteLines.push(vcfLines[nextNoteLine++]);
+  assert.equal(noteLines.length, 1, 'the concise office-hours NOTE does not need folding');
+  assert.ok(vcfLines.filter(Boolean).every((line) => Buffer.byteLength(line, 'utf8') <= 75), 'vCard lines stay within 75 octets');
+  assert.equal(noteLines[0], 'NOTE:Office hours Mon-Thu 7:30 AM-5:00 PM; Fri-Sun closed.');
   assert.match(vcf, /\r\nEND:VCARD\r\n$/);
   assert.doesNotMatch(vcf, /PATIENT|DOB|DIAGNOSIS/i);
 });
