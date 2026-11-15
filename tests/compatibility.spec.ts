@@ -69,3 +69,11 @@ test('administrative inquiry stays local in preview mode', async ({ page }) => {
   await expect(page.getByRole('status')).toContainText('Preview complete - nothing was sent');
   expect(endpointCalls).toBe(0);
 });
+
+test('Classic office contact card actions work in the cross-browser matrix', async ({ page }) => {
+  await page.goto('/contact/');
+  await expect(page.locator('.office-contact-card')).toBeVisible();
+  await expect(page.locator('.office-contact-actions a[href="tel:+18435256866"]')).toBeVisible();
+  await expect(page.locator('.office-contact-actions a[href^="https://www.google.com/maps/search/"]')).toBeVisible();
+  await expect(page.locator('.office-contact-actions a[href="/donovan-family-dentistry.vcf"]')).toHaveAttribute('download', '');
+});

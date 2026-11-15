@@ -39,7 +39,7 @@ test('Release 16.4 publishes a static office vCard without external dependencies
   }
   assert.match(layout, /Download contact card/);
   assert.match(contactActions, /Downloadable Contact Card/);
-  assert.match(classicContact, /Download Office Contact Card/);
+  assert.match(classicContact, /Save Contact/);
   assert.match(classicContact, /Save to Contacts/);
 });
 
